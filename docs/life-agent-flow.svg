@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fffaf0"/>
+      <stop offset="55%" stop-color="#f2f7ff"/>
+      <stop offset="100%" stop-color="#edf8f2"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#1f2937" flood-opacity="0.14"/>
+    </filter>
+    <style>
+      .title { font: 800 38px -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #111827; }
+      .subtitle { font: 500 20px -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #4b5563; }
+      .box-title { font: 800 24px -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #111827; }
+      .box-text { font: 500 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #374151; }
+      .small { font: 500 15px -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #6b7280; }
+      .warn { font: 700 16px -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #b45309; }
+      .box { fill: rgba(255,255,255,0.86); stroke: rgba(17,24,39,0.12); stroke-width: 1.5; filter: url(#shadow); }
+      .decision { fill: #fff7ed; stroke: #fb923c; stroke-width: 2; filter: url(#shadow); }
+      .tool { fill: #ecfdf5; stroke: #34d399; stroke-width: 2; filter: url(#shadow); }
+      .risk { fill: #fef2f2; stroke: #f87171; stroke-width: 2; filter: url(#shadow); }
+      .arrow { stroke: #374151; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+      .soft-arrow { stroke: #94a3b8; stroke-width: 2.5; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrowheadSoft); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#374151"/>
+    </marker>
+    <marker id="arrowheadSoft" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect width="1400" height="900" fill="url(#bg)"/>
+  <text x="70" y="72" class="title">Jotly Life Agent 核心链路</text>
+  <text x="70" y="108" class="subtitle">从用户说话到模型决策、用户确认、系统工具执行的最小闭环</text>
+
+  <rect x="70" y="155" rx="28" ry="28" width="270" height="128" class="box"/>
+  <text x="105" y="205" class="box-title">1. 用户输入</text>
+  <text x="105" y="239" class="box-text">按住说话 / 文本输入</text>
+  <text x="105" y="266" class="small">原始语义可能有转写错误</text>
+
+  <rect x="410" y="155" rx="28" ry="28" width="290" height="128" class="box"/>
+  <text x="445" y="205" class="box-title">2. ASR / 文本归一</text>
+  <text x="445" y="239" class="box-text">得到一段用户原话</text>
+  <text x="445" y="266" class="small">保存 RawInput，生成处理中卡片</text>
+
+  <rect x="770" y="155" rx="28" ry="28" width="290" height="128" class="decision"/>
+  <text x="805" y="205" class="box-title">3. 模型分析</text>
+  <text x="805" y="239" class="box-text">判断普通记录 / 日期 / 提醒</text>
+  <text x="805" y="266" class="small">输出结构化 JSON + 工具计划</text>
+
+  <rect x="1120" y="155" rx="28" ry="28" width="220" height="128" class="risk"/>
+  <text x="1153" y="205" class="box-title">失败兜底</text>
+  <text x="1153" y="239" class="box-text">模型失败 / JSON 错</text>
+  <text x="1153" y="266" class="small">只保存普通记录</text>
+
+  <rect x="105" y="380" rx="28" ry="28" width="300" height="146" class="decision"/>
+  <text x="140" y="430" class="box-title">4. 风险判断</text>
+  <text x="140" y="466" class="box-text">低风险：可直接记录</text>
+  <text x="140" y="493" class="box-text">中高风险：必须确认</text>
+
+  <rect x="485" y="380" rx="28" ry="28" width="300" height="146" class="box"/>
+  <text x="520" y="430" class="box-title">5. 确认卡片</text>
+  <text x="520" y="466" class="box-text">A 仅记录</text>
+  <text x="520" y="493" class="box-text">B/C 创建提醒或日程</text>
+  <text x="520" y="520" class="small">补充信息回到模型再判断</text>
+
+  <rect x="865" y="380" rx="28" ry="28" width="300" height="146" class="tool"/>
+  <text x="900" y="430" class="box-title">6. 工具执行</text>
+  <text x="900" y="466" class="box-text">保存记录 / 创建提醒</text>
+  <text x="900" y="493" class="box-text">写日历 / 通知兜底</text>
+  <text x="900" y="520" class="small">记录系统对象 ID，方便撤销</text>
+
+  <rect x="485" y="655" rx="28" ry="28" width="300" height="136" class="box"/>
+  <text x="520" y="705" class="box-title">7. 观察结果</text>
+  <text x="520" y="741" class="box-text">成功：完成卡片</text>
+  <text x="520" y="768" class="box-text">失败：展示原因，可重试</text>
+
+  <rect x="865" y="655" rx="28" ry="28" width="300" height="136" class="box"/>
+  <text x="900" y="705" class="box-title">8. 后续维护</text>
+  <text x="900" y="741" class="box-text">删除卡片撤销系统对象</text>
+  <text x="900" y="768" class="box-text">农历序列启动时补齐</text>
+
+  <path d="M340 219 H410" class="arrow"/>
+  <path d="M700 219 H770" class="arrow"/>
+  <path d="M1060 219 H1120" class="soft-arrow"/>
+  <path d="M915 283 C915 330 300 330 255 380" class="arrow"/>
+  <path d="M405 453 H485" class="arrow"/>
+  <path d="M785 453 H865" class="arrow"/>
+  <path d="M1015 526 C1015 595 690 595 635 655" class="arrow"/>
+  <path d="M785 723 H865" class="arrow"/>
+  <path d="M610 655 C565 610 555 565 585 526" class="soft-arrow"/>
+
+  <rect x="70" y="826" rx="18" ry="18" width="1265" height="44" fill="rgba(255,255,255,0.72)" stroke="rgba(17,24,39,0.10)"/>
+  <text x="95" y="854" class="warn">当前审核重点：</text>
+  <text x="220" y="854" class="small">模型工具名、卡片选项、执行器映射必须统一；否则模型“判断正确”，App 也可能执行不到正确动作。</text>
+</svg>

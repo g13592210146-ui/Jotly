@@ -1,0 +1,9 @@
+DerivedData/
+*.xcuserstate
+Jotly/Config/LocalSecrets.plist
+
+# Local Apple/Xcode state and build outputs
+.DS_Store
+*.xcworkspace/xcuserdata/
+Jotly.xcodeproj/xcuserdata/
+build/
