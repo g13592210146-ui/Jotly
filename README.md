@@ -1,94 +1,131 @@
-# Jotly
+# Jotly · 随心记
 
-Jotly 是一个 iOS 原生的语音随手记应用，核心流程是：
+> **说一句，生活自动成卡片。**
 
-`长按说话 -> 实时转写 -> 生成卡片 -> DeepSeek 分析 -> 选择题式确认 -> 工具执行 -> 结果回显`
+Jotly 是一个原生 iOS / Android 的 Life Agent 实验项目：用户不用先选择“日记、提醒、打卡还是资产”，只要把生活里的一句话说出来，Agent 就负责理解、调用合适的工具、保存可追溯的记忆，并把结果变成一张以后还能继续操作的卡片。
 
-## 接手顺序
+它不是把聊天窗口换了个皮肤，也不是把几个固定表单塞进一个 App。Jotly 想验证的是一条更自然的路径：
 
-新模型或新开发者接手时，按这个顺序看：
+```text
+一句话 / 一张图片
+        ↓
+语音或图片理解
+        ↓
+主 Agent 判断意图、选择工具
+        ↘                 ↙
+       记忆 Agent 管理召回与长期记忆
+        ↓
+真实动作、提醒、卡片和可追溯记录
+```
 
-1. [`AI_USER_STORY.md`](./AI_USER_STORY.md)
-2. [`DESIGN_GUIDELINES.md`](./DESIGN_GUIDELINES.md)
-3. [`项目日志/README.md`](./项目日志/README.md)
-4. `JotlyHomeScreen.swift`
-5. `JotlyHomeViewModel.swift`
-6. `JotlyServices.swift`
-7. `JotlyModels.swift`
+## 现在能做什么
 
-## 本地密钥配置
+- **随口记录**：长按说话，实时转写后自动整理成卡片。
+- **生活动作**：生日、日程、倒计时、习惯打卡、订阅和简单资产等场景由 Agent 选择工具处理。
+- **图片备忘**：从相册或相机输入图片，保留图片路径、拍摄/上传信息和模型描述；之后可以用自然语言找回相关图片。
+- **长期记忆**：原始输入、Agent 运行、记忆条目、工具动作和卡片彼此可追溯；关键词、语义和结构化条件可以组合查询。
+- **可恢复流程**：模型调用、记忆更新和 Embedding 任务有状态、可重试、可恢复，避免一次异常让用户的输入消失。
+- **调试工作台**：把主线程、记忆线程、快检索、深检索和工具执行串成可查看的时间线，方便定位问题，而不是只看最后一句“处理失败”。
 
-仓库不保存任何 API Key。首次运行前：
+当前仍处于快速迭代期。iOS 是主要演示端，Android 正在按相同的产品规则补齐；真机语音、相机和提醒行为以项目日志中的验收结论为准。
 
-1. 复制 `Jotly/Config/LocalSecrets.example.plist` 为 `Jotly/Config/LocalSecrets.plist`。
-2. 在本地文件中填写需要使用的模型和语音服务密钥。
-3. 不要提交 `LocalSecrets.plist`；该文件已加入 `.gitignore`。
+## 一个完整例子
 
-运行时也可以通过同名环境变量，或应用使用的 `UserDefaults` 配置项提供密钥。
+用户说：
 
-## 版本管理
+> “我妈生日是农历五月十二，提前一周提醒我。”
 
-当前已经建立第一个可回滚版本，方便后续按不同分叉继续调试：
+Jotly 会尝试完成：识别这是一个长期日期事实 → 记住“妈妈生日”及来源 → 判断提醒是否需要确认 → 创建系统提醒 → 在卡片里显示结果。之后用户可以继续说“改成提前两天”，而不是重新填写一张表。
 
-- Git commit: `9c3ca39`
-- Git tag: `input-dock-v1`
+## 设计重点
 
-这个版本对应当前“底部输入框 / 输入 dock”状态。后续如果要试不同方向，建议直接基于这个 tag 分叉，不要在它上面反复堆改。
+### Agent 主导，应用守边界
 
-## 当前语音测试分支
+模型负责理解用户意图、决定是否查记忆、选择工具和提出下一步；App 负责权限、参数校验、确认、事务、幂等和真实副作用。提示词提供工作空间和能力边界，不用大量硬编码关键词假装“智能”。
 
-当前语音 Provider 测试实现线来自 `feature/mimo-asr`，当前 `feature/voice-mvp` 已合并这条实现线，不影响 `input-dock-v1` 基线版本。
+### 记忆不是一张备注表
 
-- Provider 切换入口：顶部 `Apple / MIMO / 豆包 / 阿里`
-- MIMO 当前策略：录音期间只缓存音频，松手后一次性提交完整 WAV，避免流式重复识别同一句话
-- 豆包当前状态：已接入基于 Seed/WebSocket 的实时链路，使用当前测试凭据和候选 ResourceId，后续主要看运行日志里的鉴权和回包解析
-- 阿里云当前状态：已接入 `Jotly/Frameworks/nuisdk.framework` 真机版，并通过通用 iOS 真机构建；模拟器运行仍需要额外 SDK slice
-- 分支详情见 [`项目日志/2026-06-16-语音识别Provider测试分支.md`](./项目日志/2026-06-16-语音识别Provider测试分支.md)
+记忆系统把原始输入、结构化记忆、图片资产、来源和变更轨迹分开保存。卡片只是展示层：删除卡片不等于删除记忆，删除记忆也不等于删除原始输入。所有长期信息都要能回答“从哪里来、何时更新、现在是否有效”。
 
-## 当前维护原则
+### 先给主线程线索，再让记忆线程深挖
 
-- 需求变化、卡点、尝试过的方案，优先写入 `项目日志/`
-- 视觉规范和版本兼容约束，优先写入 `DESIGN_GUIDELINES.md`
-- 产品故事、闭环范围、MVP 边界，优先写入 `AI_USER_STORY.md`
-- 新增可复用的约定，优先写成文档，不只留在聊天记录里
-- 项目日志建议先更新 `项目日志/README.md`，再新增具体条目，避免目录越来越散
+文字检索和向量检索并行启动，在很短的时间预算内把已有线索交给主线程；记忆 Agent 可以在后台继续深搜、合并或更新记忆。最多查询次数是安全上限，不是每次都必须查满。
 
-## Memory OS 数据原则
+## 仓库结构
 
-1. Card 不是数据库，Card 是 Memory 的展示层。
-2. 所有用户输入必须先进入 RawEvent。
-3. 所有 Agent 运行必须产生 AgentRun。
-4. 所有长期信息必须进入 MemoryItem。
-5. Memory 必须可以追溯来源 Message。
-6. 删除 Card 不等于删除 Memory。
-7. 删除 Memory 不等于删除原始输入。
-8. 所有工具调用必须记录 ActionLog。
-9. 所有异步任务必须可恢复。
-10. 数据结构优先于 UI。
+```text
+Jotly/                 iOS 原生 App
+JotlyTests/            iOS 单元与流程测试
+JotlyAndroid/          Android 工程（与 iOS 共享产品规则）
+gateway/               GPT-5.6 等模型的受控网关示例
+docs/MemoryOS/         记忆系统、评测和执行计划
+项目日志/               唯一的项目接手与验收入口
+Prompts/                版本化提示词记录
+scripts/                隔离的记忆评测脚本与数据集
+```
 
-详细设计见 [`docs/MemoryOS/ARCHITECTURE.md`](./docs/MemoryOS/ARCHITECTURE.md) 和 [`docs/MemoryOS/MIGRATION_PLAN.md`](./docs/MemoryOS/MIGRATION_PLAN.md)。
+新贡献者请先读：
 
-## 运行日志渠道
+1. [`项目日志/README.md`](./项目日志/README.md) — 当前状态和接手规则
+2. [`项目日志/项目背景与用户故事.md`](./项目日志/项目背景与用户故事.md) — 产品边界
+3. [`docs/MemoryOS/ARCHITECTURE.md`](./docs/MemoryOS/ARCHITECTURE.md) — 记忆系统
+4. [`DESIGN_GUIDELINES.md`](./DESIGN_GUIDELINES.md) — UI 和兼容性约束
+5. [`BUILD_WEEK_LOG.md`](./BUILD_WEEK_LOG.md) — 比赛期间实际交付记录
 
-这个项目需要同时看两类日志：
+## 本地运行
 
-### 1. Xcode / Simulator 运行日志
+### iOS
 
-- 用 Xcode 的 Console 看 App 运行时输出
-- 按 `subsystem == com.xingchen.Jotly` 过滤
-- 关注 `app`、`speech`、`deepseek`、`storage`、`tool` 这些 category
+1. 使用 Xcode 打开 `Jotly.xcodeproj`。
+2. 复制 `Jotly/Config/LocalSecrets.example.plist` 为本机私有的 `Jotly/Config/LocalSecrets.plist`。
+3. 只在本地配置模型和语音服务凭据；`LocalSecrets.plist` 已被 Git 忽略，禁止提交。
+4. 选择真机运行。语音、相机、照片库和系统提醒需要在真机上验收，模拟器通过不代表这些能力可用。
 
-### 2. 编译日志
+无签名构建检查：
 
-- 用 `xcodebuild` 或 Xcode Build 输出判断编译是否成功
-- 如果出现语音、权限、网络、卡片状态问题，优先看最近一次构建和运行日志
+```bash
+xcodebuild \
+  -project Jotly.xcodeproj \
+  -scheme Jotly \
+  -destination 'generic/platform=iOS' \
+  -derivedDataPath /private/tmp/JotlyDerivedData \
+  CODE_SIGNING_ALLOWED=NO build
+```
 
-## 调试约定
+### Android
 
-- 每次改动后，先编译验证
-- 语音识别、DeepSeek、提醒创建这三条主链路都要能从日志里定位状态
-- 如果运行态有异常，先看日志，再改代码
+1. 使用 Android Studio 打开 `JotlyAndroid/`。
+2. 在 `JotlyAndroid/local.properties` 配置本地凭据；该文件不会进入版本库。
+3. 使用 `JotlyAndroid/gradlew assembleDebug` 做构建检查。
 
-## 当前目标
+## 密钥与隐私
 
-第一期只保证生日提醒闭环和兼容性，不扩展复杂业务。
+公开提交不应保存任何真实 API Key、Access Token、个人数据库或图片原图。凭据只允许来自本地忽略文件、环境变量或运行时设置。注意：本地开发历史仍包含早期实验提交，不能直接把整个本地历史推到公开仓库；公开同步必须从安全基线或经过历史清理的快照开始。发现疑似泄露时，请不要把密钥贴到 Issue；先立即撤销并通过私下渠道联系维护者，详见 [`SECURITY.md`](./SECURITY.md)。
+
+## 开源协作
+
+我们欢迎三类贡献：可复现的 Bug、清晰的用户场景、以及能让 Agent/记忆流程更稳健的实现。提交前请：
+
+- 先搜索已有 Issue，避免重复；
+- 说明设备、系统、模型/语音 Provider 和复现步骤；
+- 把模型原始输出、调试日志中的密钥和个人内容脱敏；
+- 小步提交，保持一次 PR 只解决一个问题；
+- 代码改动后至少完成对应的构建或测试，并在 PR 中区分“已构建”和“已真机验收”。
+
+详见 [`CONTRIBUTING.md`](./CONTRIBUTING.md)。
+
+## 路线图
+
+- **稳定输入**：语音不吞字、不重复、不因切换相册/相机而卡死；图片预览和上传可恢复。
+- **可靠记忆**：更快的混合召回、关系和时间线查询、图片语义检索，以及 20 条规模的完整端到端评测。
+- **透明协作**：共享工作台展示主 Agent 与记忆 Agent 的真实输入、输出、耗时和决策。
+- **更强工具**：在用户允许的前提下，让 Agent 能继续编辑、归档和删除卡片及其关联的提醒。
+- **可发布版本**：补齐 Android 真机验收、隐私说明、版本发布和面向普通用户的生产配置。
+
+## 许可证
+
+许可证文件将在公开发布前补齐。当前仓库处于公开开发和方案验证阶段，请不要把代码当作已授予第三方的生产使用许可。
+
+---
+
+Jotly 的目标很简单：让“我刚刚随口说过的事”真的变成以后找得到、改得动、用得上的生活记忆。
