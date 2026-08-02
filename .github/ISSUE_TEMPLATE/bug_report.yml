@@ -1,0 +1,47 @@
+name: Bug report
+description: 报告一个可以复现的问题
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请先移除 API Key、Access Token、个人信息和原图，再提交日志或截图。
+  - type: input
+    id: device
+    attributes:
+      label: 设备与系统
+      placeholder: iPhone 15 Pro / iOS 26.0
+    validations:
+      required: true
+  - type: dropdown
+    id: input_mode
+    attributes:
+      label: 输入方式
+      options:
+        - 文字
+        - 语音
+        - 相册图片
+        - 相机图片
+        - 快捷指令
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: 请按 1、2、3 描述最短复现路径
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 脱敏后的日志或截图
+      description: 请确认没有密钥、个人信息或原图
