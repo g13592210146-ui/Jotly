@@ -1,0 +1,26 @@
+name: iOS build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ios-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+      - name: Build without signing
+        run: |
+          xcodebuild \
+            -project Jotly.xcodeproj \
+            -scheme Jotly \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/JotlyDerivedData" \
+            CODE_SIGNING_ALLOWED=NO build
