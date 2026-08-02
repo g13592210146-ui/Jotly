@@ -7,3 +7,16 @@ Jotly/Config/LocalSecrets.plist
 *.xcworkspace/xcuserdata/
 Jotly.xcodeproj/xcuserdata/
 build/
+
+# Local, potentially large benchmark traces. The versioned fixtures and report format live in docs/MemoryOS.
+docs/MemoryOS/evaluations/generated/
+
+# Android / IDE local state
+JotlyAndroid/.idea/
+JotlyAndroid/local.properties
+JotlyAndroid/**/build/
+JotlyAndroid/.gradle/
+
+# Local build / capture artifacts
+xcodebuild.log
+JotlyAndroid/screenshot_*.png
